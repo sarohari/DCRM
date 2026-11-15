@@ -1,0 +1,23 @@
+{% load static %}
+<fieldset data-line-formset>
+  <legend>Sale lines</legend>
+  {{ line_formset.management_form }}
+  {{ line_formset.non_form_errors }}
+  <div data-line-forms>
+    {% for form in line_formset.forms %}
+      <div class="card sale-line-form">
+        {{ form.as_p }}
+        <button type="button" data-remove-line>Remove line</button>
+      </div>
+    {% endfor %}
+  </div>
+  <template data-empty-line>
+    <div class="card sale-line-form">
+      {{ line_formset.empty_form.as_p }}
+      <button type="button" data-remove-line>Remove line</button>
+    </div>
+  </template>
+  <button type="button" data-add-line>Add sale line</button>
+  <p>Line subtotal: ₹<output data-line-subtotal>0.00</output></p>
+</fieldset>
+<script src="{% static 'js/sale_formset.js' %}" defer></script>

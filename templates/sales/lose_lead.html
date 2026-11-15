@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Lost · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Mark enquiry Lost</h1>
+  <p>{{ lead.customer.name }} · {{ lead.product_category.name }}</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Mark Lost</button>
+    <a href="{% url 'lead_detail' lead.pk %}">Cancel</a>
+  </form>
+{% endblock %}

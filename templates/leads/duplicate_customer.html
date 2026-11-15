@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm customer · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Existing customer found</h1>
+  <section class="card">
+    <p>This phone matches an existing customer. Confirm that this is the same person before adding the visit.</p>
+    <h2>{{ customer.name }}</h2>
+    <p class="masked" aria-label="Partially masked phone number">{{ masked_phone }}</p>
+    <h3>Recent visits</h3>
+    {% if recent_visits %}
+      <ul>
+        {% for visit in recent_visits %}<li>{{ visit.visited_at|date:"j M Y, g:i a" }}</li>{% endfor %}
+      </ul>
+    {% else %}
+      <p>No previous visits.</p>
+    {% endif %}
+    {% if form.non_field_errors %}<div role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}{% if field.errors %}<p role="alert">{{ field.label }}: {{ field.errors }}</p>{% endif %}{% endfor %}
+    <form method="post" action="{% url 'walkin_confirm' %}">
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.name != "customer_id" %}
+          <input type="hidden" name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}">
+        {% endif %}
+      {% endfor %}
+      <input type="hidden" name="customer_id" value="{{ customer.pk }}">
+      <div class="actions">
+        <button type="submit">Confirm and add visit</button>
+        <a class="button secondary" href="{% url 'walkin_new' %}">Go back and correct details</a>
+      </div>
+    </form>
+  </section>
+  <p>If this is a different person using the same phone, go back and enter a corrected phone number.</p>
+{% endblock %}

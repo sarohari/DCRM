@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Follow-up cadence · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Follow-up cadence</h1>
+  <p><a href="{% url 'settings_home' %}">Settings</a></p>
+  <section class="card">
+    {% if has_active_cadence %}<p>Current offsets: {% for offset in active_offsets %}{{ offset }} day{% if offset != 1 %}s{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %} after the visit.</p>
+    {% else %}<p role="alert">No active cadence is configured. Save three offsets to enable new follow-up schedules.</p>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <p>Set exactly three unique offsets from 1 to 365 days. Existing follow-ups will keep their current dates.</p>
+      {{ form.as_p }}
+      <button type="submit">Save cadence</button>
+    </form>
+  </section>
+{% endblock %}

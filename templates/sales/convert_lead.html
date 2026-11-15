@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Record sale · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Mark enquiry Converted</h1>
+  <p>{{ lead.customer.name }} · {{ lead.product_category.name }}</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ sale_form.as_p }}
+    {% include "sales/_sale_lines_formset.html" %}
+    <p>Leave Sale total override blank to use the line subtotal. If you enter a different total, provide an override reason.</p>
+    <button type="submit">Save sale and convert</button>
+    <a href="{% url 'lead_detail' lead.pk %}">Cancel</a>
+  </form>
+{% endblock %}

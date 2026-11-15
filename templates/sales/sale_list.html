@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Sales · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Sales</h1>
+  <p><a href="{% url 'home' %}">Home</a> · <a href="{% url 'lead_list' %}">Enquiries</a></p>
+  {% if sales %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Sale date</th><th>Bill number</th><th>Customer</th><th>Category</th><th>Items</th><th>Total</th><th>Recorded by</th></tr></thead>
+      <tbody>{% for sale in sales %}
+        <tr>
+          <td><a href="{% url 'lead_detail' sale.lead_id %}">{{ sale.sale_date|date:"j M Y" }}</a></td>
+          <td>{{ sale.bill_number }}</td>
+          <td><a href="{% url 'customer_detail' sale.lead.customer_id %}">{{ sale.lead.customer.name }}</a></td>
+          <td>{{ sale.lead.product_category.name }}</td>
+          <td>{% for line in sale.lines.all %}{% if not line.is_void %}{{ line.description }}{% if not forloop.last %}, {% endif %}{% endif %}{% empty %}—{% endfor %}</td>
+          <td>₹{{ sale.total_amount }}</td>
+          <td>{{ sale.recorded_by.name }}</td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}<p>No sales recorded yet.</p>{% endif %}
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Sales pages">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

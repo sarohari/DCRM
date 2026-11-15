@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Enquiry · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Enquiry</h1>
+  <section class="card">
+    <dl>
+      <dt>Customer</dt><dd><a href="{% url 'customer_detail' lead.customer_id %}">{{ lead.customer.name }}</a></dd>
+      <dt>Category</dt><dd>{{ lead.product_category.name }}</dd>
+      <dt>Budget range</dt><dd>{{ lead.budget_range.label|default:"Not provided" }}</dd>
+      <dt>Status</dt><dd>{{ lead.get_status_display }}</dd>
+      <dt>Assigned to</dt><dd>{{ lead.assigned_to.name }}</dd>
+      <dt>Created by</dt><dd>{{ lead.created_by.name }}</dd>
+      <dt>Visit date</dt><dd>{{ lead.visit.visited_at|date:"j M Y, g:i a" }}</dd>
+      <dt>Time spent</dt><dd>{% if lead.visit.time_spent_minutes != None %}{{ lead.visit.time_spent_minutes }} min{% else %}Not recorded{% endif %}</dd>
+      <dt>Notes</dt><dd>{{ lead.visit.notes|default:"—" }}</dd>
+    </dl>
+  </section>
+  {% if lead.status == "NEW" or lead.status == "FOLLOW_UP" %}
+    <nav class="actions" aria-label="Lead actions">
+      <a class="button" href="{% url 'lead_convert' lead.pk %}">Mark Converted</a>
+      <a class="button secondary" href="{% url 'lead_lose' lead.pk %}">Mark Lost</a>
+    </nav>
+    <section aria-labelledby="assignment-heading">
+      <h2 id="assignment-heading">Assignment</h2>
+      <form method="post" action="{% url 'lead_assign' lead.pk %}" class="card">
+        {% csrf_token %}
+        {{ assignment_form.as_p }}
+        <button type="submit">Save assignment</button>
+      </form>
+    </section>
+  {% endif %}
+  {% if sale %}
+    <section aria-labelledby="sale-heading">
+      <h2 id="sale-heading">Sale</h2>
+      <dl>
+        <dt>Sale date</dt><dd>{{ sale.sale_date|date:"j M Y" }}</dd>
+        <dt>Bill number</dt><dd>{{ sale.bill_number }}</dd>
+        <dt>Channel</dt><dd>{{ sale.get_channel_display }}</dd>
+        <dt>Recorded by</dt><dd>{{ sale.recorded_by.name }}</dd>
+        <dt>Line subtotal</dt><dd>₹{{ sale.line_subtotal }}</dd>
+        <dt>Sale total</dt><dd>₹{{ sale.total_amount }}</dd>
+        {% if sale.total_override_note %}<dt>Total override reason</dt><dd>{{ sale.total_override_note }}</dd>{% endif %}
+        <dt>Converted at</dt><dd>{{ lead.converted_at|date:"j M Y, g:i a" }} by {{ lead.closed_by.name }}</dd>
+      </dl>
+      <h3>Sale lines</h3>
+      <ul>
+        {% for line in sale.lines.all %}
+          <li>
+            {{ line.product_category.name }} — {{ line.description }} · Qty {{ line.quantity }} · ₹{{ line.amount }}
+            {% if line.is_void %}(removed by {{ line.voided_by.name }} at {{ line.voided_at|date:"j M Y, g:i a" }}){% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if is_owner %}<p><a class="button secondary" href="{% url 'sale_edit' sale.pk %}">Edit sale</a></p>{% endif %}
+    </section>
+  {% endif %}
+  {% if lead.status == "LOST" %}
+    <section aria-labelledby="lost-heading" class="card">
+      <h2 id="lost-heading">Marked Lost</h2>
+      <p>Reason: {{ lead.lost_reason.label }}</p>
+      <p>Notes: {{ lead.loss_notes|default:"—" }}</p>
+      <p>Closed {{ lead.closed_at|date:"j M Y, g:i a" }} by {{ lead.closed_by.name }}</p>
+      {% if is_owner %}
+        <form method="post" action="{% url 'lead_closure_edit' lead.pk %}">
+          {% csrf_token %}
+          {{ lost_form.as_p }}
+          <button type="submit">Update Lost details</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+  <section aria-labelledby="followups-heading">
+    <h2 id="followups-heading">Follow-up history</h2>
+    {% if lead.status == "NEW" or lead.status == "FOLLOW_UP" %}
+      <form method="post" action="{% url 'followup_add' lead.pk %}" class="card">
+        {% csrf_token %}
+        <h3>Add follow-up</h3>
+        {{ add_followup_form.as_p }}
+        <button type="submit">Add follow-up</button>
+      </form>
+    {% endif %}
+    {% if followups.object_list %}
+      <ol>
+        {% for item in followups %}
+          <li class="card">
+            <p>{{ item.scheduled_date|date:"j M Y" }} · {{ item.get_channel_display }} · {{ item.assigned_to.name }}</p>
+            {% if item.is_skipped %}
+              <p>Skipped by {{ item.skipped_by.name }} at {{ item.skipped_at|date:"j M Y, g:i a" }}</p>
+            {% elif item.outcome %}
+              <p>{{ item.get_outcome_display }} · completed by {{ item.completed_by.name }} at {{ item.completed_at|date:"j M Y, g:i a" }}</p>
+              <p>{{ item.notes|default:"No notes" }}</p>
+            {% else %}
+              <p>Pending</p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>No follow-ups.</p>
+    {% endif %}
+    {% if followups.paginator.num_pages > 1 %}
+      <nav class="pagination" aria-label="Follow-up history pages">
+        {% if followups.has_previous %}<a href="?followup_page={{ followups.previous_page_number }}">Previous</a>{% endif %}
+        <span>Page {{ followups.number }} of {{ followups.paginator.num_pages }}</span>
+        {% if followups.has_next %}<a href="?followup_page={{ followups.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  </section>
+  <p><a href="{% url 'lead_list' %}">Back to enquiries</a></p>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Settings · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Settings</h1>
+  <p>Manage the values used for new enquiries, sales, and follow-ups.</p>
+  <ul class="card">
+    <li><a href="{% url 'managed_values' 'categories' %}">Product categories</a></li>
+    <li><a href="{% url 'managed_values' 'budget-ranges' %}">Budget ranges</a></li>
+    <li><a href="{% url 'managed_values' 'lost-reasons' %}">Lost reasons</a></li>
+    <li><a href="{% url 'followup_cadence_settings' %}">Follow-up cadence</a></li>
+  </ul>
+{% endblock %}

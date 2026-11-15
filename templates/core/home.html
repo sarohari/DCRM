@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Duroflex CRM</h1>
+  <p>Signed in as {{ request.user.name }} ({{ request.user.get_role_display }}).</p>
+  <p>Outlet: Salem-outlet-1</p>
+  <section aria-labelledby="today-heading">
+    <h2 id="today-heading">Today · {{ today|date:"j M Y" }}</h2>
+    <div class="metric-grid">
+      <a class="metric card" href="{% url 'daily_report' %}"><span>Walk-ins</span><strong>{{ walkin_count }}</strong></a>
+      <a class="metric card" href="{% url 'daily_report' %}"><span>Converted enquiries</span><strong>{{ conversion_count }}</strong></a>
+      <a class="metric card" href="{% url 'overdue_report' %}"><span>Overdue follow-ups</span><strong>{{ overdue_count }}</strong></a>
+    </div>
+  </section>
+  <nav class="actions" aria-label="Main actions">
+    <a class="button" href="{% url 'walkin_new' %}">Record a walk-in</a>
+    <a class="button secondary" href="{% url 'lead_list' %}">View enquiries</a>
+    <a class="button secondary" href="{% url 'sale_list' %}">Sales</a>
+    <a class="button secondary" href="{% url 'followup_queue' %}">Follow-up queue</a>
+  </nav>
+  <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Sign out</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Enquiries · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Enquiries</h1>
+  <form method="get" class="card">
+    <p>
+      <label for="id_status">Status</label>
+      <select id="id_status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </p>
+    <button type="submit">Filter</button>
+  </form>
+  {% if page_obj.object_list %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Created</th><th>Customer</th><th>Category</th><th>Status</th><th>Assigned to</th></tr></thead>
+      <tbody>{% for lead in leads %}
+        <tr>
+          <td><a href="{% url 'lead_detail' lead.id %}">{{ lead.created_at|date:"j M Y, g:i a" }}</a></td>
+          <td><a href="{% url 'customer_detail' lead.customer_id %}">{{ lead.customer.name }}</a></td>
+          <td>{{ lead.product_category.name }}</td>
+          <td>{{ lead.get_status_display }}</td>
+          <td>{{ lead.assigned_to.name }}</td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}<p>No enquiries match this filter.</p>{% endif %}
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Enquiry pages">
+      {% if page_obj.has_previous %}<a href="?status={{ selected_status|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?status={{ selected_status|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+  <p><a href="{% url 'walkin_new' %}">Record a walk-in</a></p>
+{% endblock %}

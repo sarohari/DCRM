@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Edit sale · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Edit sale</h1>
+  <p>{{ lead.customer.name }} · {{ lead.product_category.name }}. Only the Owner can edit saved sale details.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ sale_form.as_p }}
+    {% include "sales/_sale_lines_formset.html" %}
+    <p>Removing a line marks it as void in the history. Leave Sale total override blank to recalculate from the active lines.</p>
+    <button type="submit">Save sale changes</button>
+    <a href="{% url 'lead_detail' lead.pk %}">Cancel</a>
+  </form>
+{% endblock %}

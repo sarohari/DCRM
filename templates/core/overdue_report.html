@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Overdue follow-ups · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Overdue follow-ups</h1>
+  <form method="get" class="card">
+    {{ filter_form.as_p }}
+    <button type="submit">Filter</button>
+  </form>
+  {% if page_obj.object_list %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Customer</th><th>Assigned to</th><th>Scheduled</th><th>Days overdue</th><th>Last outcome</th></tr></thead>
+      <tbody>{% for item in page_obj %}<tr>
+        <td><a href="{% url 'lead_detail' item.lead_id %}">{{ item.lead.customer.name }}</a></td>
+        <td>{{ item.assigned_to.name }}</td><td>{{ item.scheduled_date|date:"j M Y" }}</td>
+        <td>{{ item.days_overdue }}</td><td>{{ item.latest_outcome_label }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    <nav class="pagination" aria-label="Report pages">
+      {% if page_obj.has_previous %}<a href="?assigned_user={{ request.GET.assigned_user }}&page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?assigned_user={{ request.GET.assigned_user }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </nav>
+  {% else %}<p>No overdue follow-ups.</p>{% endif %}
+{% endblock %}

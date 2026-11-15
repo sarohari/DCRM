@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Daily walk-ins and conversions · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Daily walk-ins and conversions</h1>
+  <p>Conversions are grouped by the date the enquiry was created. The percentage is converted enquiries from that date divided by walk-ins on that date.</p>
+  <form method="get" class="card">
+    {{ form.as_p }}
+    <button type="submit">Apply dates</button>
+  </form>
+  {% if rows != None %}
+    {% if rows %}<div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Walk-ins</th><th>Converted enquiries</th><th>Conversion percentage</th></tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td>{{ row.date|date:"j M Y" }}</td><td>{{ row.walkins }}</td><td>{{ row.conversions }}</td>
+        <td>{% if row.conversion_percentage != None %}{{ row.conversion_percentage }}%{% else %}—{% endif %}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>{% endif %}
+  {% endif %}
+{% endblock %}

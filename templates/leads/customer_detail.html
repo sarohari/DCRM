@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.name }} · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>{{ customer.name }}</h1>
+  <p>Phone: <span class="masked">{{ masked_phone }}</span></p>
+  <p>Company: Duroflex · Outlet: Salem-outlet-1</p>
+
+  <section>
+    <h2>Visits</h2>
+    {% if visits_page.object_list %}
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Time spent</th><th>Notes</th><th>Logged by</th></tr></thead>
+        <tbody>{% for visit in visits_page %}
+          <tr>
+            <td>{{ visit.visited_at|date:"j M Y, g:i a" }}</td>
+            <td>{% if visit.time_spent_minutes != None %}{{ visit.time_spent_minutes }} min{% else %}—{% endif %}</td>
+            <td>{{ visit.notes|default:"—" }}</td>
+            <td>{{ visit.logged_by.name }}</td>
+          </tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p>No visits recorded.</p>{% endif %}
+    {% if visits_page.paginator.num_pages > 1 %}
+      <nav class="pagination" aria-label="Visit history pages">
+        {% if visits_page.has_previous %}<a href="?visit_page={{ visits_page.previous_page_number }}&lead_page={{ leads_page.number }}">Previous</a>{% endif %}
+        <span>Page {{ visits_page.number }} of {{ visits_page.paginator.num_pages }}</span>
+        {% if visits_page.has_next %}<a href="?visit_page={{ visits_page.next_page_number }}&lead_page={{ leads_page.number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Enquiries</h2>
+    {% if leads_page.object_list %}
+      <div class="table-wrap"><table>
+        <thead><tr><th>Created</th><th>Category</th><th>Status</th><th>Assigned to</th></tr></thead>
+        <tbody>{% for lead in leads_page %}
+          <tr>
+            <td><a href="{% url 'lead_detail' lead.id %}">{{ lead.created_at|date:"j M Y, g:i a" }}</a></td>
+            <td>{{ lead.product_category.name }}</td>
+            <td>{{ lead.get_status_display }}</td>
+            <td>{{ lead.assigned_to.name }}</td>
+          </tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p>No enquiries recorded.</p>{% endif %}
+    {% if leads_page.paginator.num_pages > 1 %}
+      <nav class="pagination" aria-label="Enquiry history pages">
+        {% if leads_page.has_previous %}<a href="?visit_page={{ visits_page.number }}&lead_page={{ leads_page.previous_page_number }}">Previous</a>{% endif %}
+        <span>Page {{ leads_page.number }} of {{ leads_page.paginator.num_pages }}</span>
+        {% if leads_page.has_next %}<a href="?visit_page={{ visits_page.number }}&lead_page={{ leads_page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  </section>
+  <p><a href="{% url 'walkin_new' %}">Record another walk-in</a> · <a href="{% url 'lead_list' %}">View enquiries</a></p>
+{% endblock %}

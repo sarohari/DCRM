@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Follow-ups · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Follow-up queue</h1>
+  <p>Today: {{ today_date|date:"j M Y" }} · Salem-outlet-1</p>
+  <p><a href="{% url 'home' %}">Home</a> · <a href="{% url 'lead_list' %}">Enquiries</a></p>
+
+  {% if action_form %}
+    <section class="card" aria-labelledby="action-error-heading">
+      <h2 id="action-error-heading">{{ action_label }}</h2>
+      <form method="post" action="{{ action_url }}">
+        {% csrf_token %}
+        {{ action_form.as_p }}
+        <button type="submit">Try again</button>
+      </form>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="overdue-heading">
+    <h2 id="overdue-heading">Overdue ({{ overdue.paginator.count }})</h2>
+    {% include "followups/_queue_group.html" with page=overdue page_param="overdue_page" %}
+  </section>
+  <section aria-labelledby="today-heading">
+    <h2 id="today-heading">Today ({{ today.paginator.count }})</h2>
+    {% include "followups/_queue_group.html" with page=today page_param="today_page" %}
+  </section>
+  <section aria-labelledby="upcoming-heading">
+    <h2 id="upcoming-heading">Upcoming ({{ upcoming.paginator.count }})</h2>
+    {% include "followups/_queue_group.html" with page=upcoming page_param="upcoming_page" %}
+  </section>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% if page.object_list %}
+  <div class="cards">
+    {% for item in page %}
+      <article class="card">
+        <h3><a href="{% url 'lead_detail' item.lead_id %}">{{ item.lead.customer.name }}</a></h3>
+        <p>{{ item.masked_phone }} · {{ item.lead.product_category.name }}</p>
+        <p>{{ item.scheduled_date|date:"j M Y" }} · {{ item.get_channel_display }} · {{ item.lead.get_status_display }} · Assigned to {{ item.lead.assigned_to.name }}</p>
+        {% if item.channel == "WHATSAPP" %}
+          <p><a href="{{ item.whatsapp_url }}" target="_blank" rel="noopener">Open WhatsApp with a suggested message</a> · <a href="{{ item.whatsapp_url_plain }}" target="_blank" rel="noopener">Open without a message</a> (send manually)</p>
+        {% endif %}
+        <details>
+          <summary>Record outcome or update schedule</summary>
+          <form method="post" action="{% url 'followup_complete' item.pk %}">
+            {% csrf_token %}
+            <label>Outcome
+              <select name="outcome" required>
+                <option value="">Choose outcome</option>
+                <option value="CONNECTED">Connected</option>
+                <option value="NO_ANSWER">No answer</option>
+                <option value="INTERESTED">Interested</option>
+                <option value="NEEDS_MORE_TIME">Needs more time</option>
+                <option value="NOT_INTERESTED">Not interested</option>
+              </select>
+            </label>
+            <label>Notes <textarea name="notes" rows="2" maxlength="4000"></textarea></label>
+            <label>Next date (required if this is the last pending item) <input type="date" name="next_date"></label>
+            <label>Next channel
+              <select name="next_channel"><option value="">Keep current</option><option value="CALL">Call</option><option value="WHATSAPP">WhatsApp</option></select>
+            </label>
+            <button type="submit">Save outcome</button>
+          </form>
+          <form method="post" action="{% url 'followup_reschedule' item.pk %}">
+            {% csrf_token %}
+            <label>Reschedule to <input type="date" name="scheduled_date" required></label>
+            <label>Channel
+              <select name="channel"><option value="">Keep current</option><option value="CALL">Call</option><option value="WHATSAPP">WhatsApp</option></select>
+            </label>
+            <button type="submit">Reschedule</button>
+          </form>
+          <form method="post" action="{% url 'followup_skip' item.pk %}">
+            {% csrf_token %}
+            <label>Replacement date (required if this is the last pending item) <input type="date" name="replacement_date"></label>
+            <button type="submit">Skip follow-up</button>
+          </form>
+        </details>
+      </article>
+    {% endfor %}
+  </div>
+  {% if page.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Follow-up pages">
+      {% if page.has_previous %}<a href="?overdue_page={% if page_param == 'overdue_page' %}{{ page.previous_page_number }}{% else %}{{ request.GET.overdue_page }}{% endif %}&today_page={% if page_param == 'today_page' %}{{ page.previous_page_number }}{% else %}{{ request.GET.today_page }}{% endif %}&upcoming_page={% if page_param == 'upcoming_page' %}{{ page.previous_page_number }}{% else %}{{ request.GET.upcoming_page }}{% endif %}">Previous</a>{% endif %}
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a href="?overdue_page={% if page_param == 'overdue_page' %}{{ page.next_page_number }}{% else %}{{ request.GET.overdue_page }}{% endif %}&today_page={% if page_param == 'today_page' %}{{ page.next_page_number }}{% else %}{{ request.GET.today_page }}{% endif %}&upcoming_page={% if page_param == 'upcoming_page' %}{{ page.next_page_number }}{% else %}{{ request.GET.upcoming_page }}{% endif %}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p>No follow-ups in this group.</p>
+{% endif %}

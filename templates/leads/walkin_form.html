@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Record a walk-in · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Record a walk-in</h1>
+  <p>Outlet: Salem-outlet-1</p>
+  <section class="card">
+    <form method="post" action="{% url 'walkin_new' %}">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <p>
+          {{ field.label_tag }}
+          {{ field }}
+          {{ field.errors }}
+          {% if field.name == "product_category" %}<small>Required when you create an enquiry.</small>{% endif %}
+        </p>
+      {% endfor %}
+      <button type="submit">Save walk-in</button>
+    </form>
+  </section>
+  <p><a href="{% url 'home' %}">Back to home</a></p>
+{% endblock %}

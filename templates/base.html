@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Duroflex CRM{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  </head>
+  <body>
+    <header>
+      <a href="/" class="brand">Duroflex CRM</a>
+      {% if request.user.is_authenticated %}
+        <nav aria-label="Main navigation">
+          <a href="{% url 'lead_list' %}">Enquiries</a>
+          <a href="{% url 'sale_list' %}">Sales</a>
+          <a href="{% url 'followup_queue' %}">Follow-ups</a>
+          <a href="{% url 'daily_report' %}">Reports</a>
+          <a href="{% url 'overdue_report' %}">Overdue</a>
+          {% if request.user.role == "OWNER" %}<a href="{% url 'settings_home' %}">Settings</a>{% endif %}
+        </nav>
+      {% endif %}
+    </header>
+    <main>
+      {% if messages %}
+        <ul class="messages" aria-live="polite">
+          {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
