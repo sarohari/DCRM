@@ -1,4 +1,7 @@
+import logging
 from datetime import datetime, time, timedelta
+from tempfile import SpooledTemporaryFile
+from time import perf_counter
 from zoneinfo import ZoneInfo
 
 from django.contrib import messages
@@ -7,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import TruncDate
-from django.http import Http404
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
@@ -15,7 +18,20 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import User, UserRole
 from core.authorization import roles_required, scope_queryset
-from core.forms import AssignedUserFilterForm, DateRangeForm, ManagedItemForm, FollowUpCadenceForm
+from core.forms import (
+    AssignedUserFilterForm,
+    DateRangeForm,
+    ExportDateRangeForm,
+    ManagedItemForm,
+    FollowUpCadenceForm,
+)
+from core.exporting import (
+    SPOOL_MAX_MEMORY,
+    XLSX_MIME_TYPE,
+    _role_scope,
+    safe_export_filename,
+    write_workbook,
+)
 from core.settings_services import (
     get_managed_model,
     mutate_managed_value,
@@ -24,7 +40,11 @@ from core.settings_services import (
 from followups.models import FollowUp, FollowUpCadence
 from leads.models import BudgetRange, Lead, ProductCategory, Visit
 from sales.models import LostReason, Sale
+from tenancy.models import Outlet
 from tenancy.services import get_user_scope
+
+
+export_logger = logging.getLogger("core.http")
 
 
 @login_required
@@ -56,6 +76,12 @@ def home(request):
         "conversion_count": conversions,
         "overdue_count": overdue,
     })
+
+
+@login_required
+@roles_required(UserRole.OWNER, UserRole.OUTLET_MANAGER)
+def how_to_use(request):
+    return render(request, "core/how_to_use.html")
 
 
 @login_required
@@ -247,3 +273,112 @@ def overdue_report(request):
         "page_obj": page_obj,
         "today": today,
     })
+
+
+def _export_context(request, form, *, outlet_id=None, error=None):
+    scope = get_user_scope(request.user)
+    if request.user.role == UserRole.OWNER and outlet_id is None:
+        scope_label = f"All outlets in {request.user.company.name} (currently Salem-outlet-1)"
+    else:
+        outlet = request.user.outlet
+        if outlet_id is not None and str(outlet_id) != str(outlet.pk):
+            outlet = Outlet.objects.get(pk=outlet_id, company_id=scope.company_id)
+        scope_label = outlet.name
+    return {
+        "form": form,
+        "company_name": request.user.company.name,
+        "scope_label": scope_label,
+        "include_outlet_selector": request.user.role == UserRole.OWNER,
+        "timezone_name": "Asia/Kolkata",
+        "error": error,
+    }
+
+
+@login_required
+@roles_required(UserRole.OWNER, UserRole.OUTLET_MANAGER)
+@require_http_methods(["GET", "POST"])
+def data_export(request):
+    selected_outlet_id = request.GET.get("outlet_id") if request.method == "GET" else request.POST.get("outlet_id")
+    try:
+        _, resolved_outlet_id = _role_scope(request.user, selected_outlet_id or None)
+    except Outlet.DoesNotExist as exc:
+        # Do not reveal whether an out-of-scope outlet exists.
+        raise Http404 from exc
+
+    outlet_queryset = Outlet.objects.filter(company_id=request.user.company_id)
+    include_outlet = request.user.role == UserRole.OWNER
+    if request.method == "GET":
+        form = ExportDateRangeForm(
+            request.GET if request.GET else None,
+            outlet_queryset=outlet_queryset,
+            include_outlet=include_outlet,
+        )
+        return render(request, "core/data_export.html", _export_context(
+            request, form, outlet_id=resolved_outlet_id,
+        ))
+
+    form = ExportDateRangeForm(
+        request.POST,
+        outlet_queryset=outlet_queryset,
+        include_outlet=include_outlet,
+    )
+    if not form.is_valid():
+        return render(request, "core/data_export.html", _export_context(
+            request, form, outlet_id=resolved_outlet_id,
+        ))
+
+    started_at = perf_counter()
+    output = SpooledTemporaryFile(max_size=SPOOL_MAX_MEMORY, mode="w+b")
+    try:
+        counts = write_workbook(
+            output,
+            user=request.user,
+            start_date=form.cleaned_data["start_date"],
+            end_date=form.cleaned_data["end_date"],
+            requested_outlet_id=selected_outlet_id or None,
+        )
+        filename = safe_export_filename(user=request.user, outlet_id=resolved_outlet_id)
+        response = FileResponse(
+            output,
+            as_attachment=True,
+            filename=filename,
+            content_type=XLSX_MIME_TYPE,
+        )
+        response["Cache-Control"] = "private, no-store"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+        response["X-Content-Type-Options"] = "nosniff"
+        counts_summary = ",".join(f"{name}:{count}" for name, count in counts.items())
+        export_logger.info(
+            "xlsx_export_complete user_id=%s records=%s",
+            request.user.pk,
+            counts_summary,
+            extra={
+                "request_id": getattr(request, "request_id", ""),
+                "route": "reports/export/",
+                "method": "POST",
+                "status_code": 200,
+                "duration_ms": round((perf_counter() - started_at) * 1000, 2),
+            },
+        )
+        return response
+    except Exception as exc:
+        output.close()
+        export_logger.error(
+            "xlsx_export_failed user_id=%s error_type=%s",
+            request.user.pk,
+            type(exc).__name__,
+            extra={
+                "request_id": getattr(request, "request_id", ""),
+                "route": "reports/export/",
+                "method": "POST",
+                "status_code": 500,
+                "duration_ms": round((perf_counter() - started_at) * 1000, 2),
+            },
+        )
+        return render(request, "core/data_export.html", _export_context(
+            request,
+            form,
+            outlet_id=resolved_outlet_id,
+            error="The Excel file could not be generated. Please try again.",
+        ), status=500)

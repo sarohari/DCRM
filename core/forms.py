@@ -1,3 +1,6 @@
+from datetime import date
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -32,6 +35,56 @@ class FollowUpCadenceForm(forms.Form):
 class DateRangeForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+
+    def clean(self):
+        cleaned = super().clean()
+        start, end = cleaned.get("start_date"), cleaned.get("end_date")
+        if start and end and start > end:
+            self.add_error("end_date", "End date must be on or after the start date.")
+        return cleaned
+
+
+class ExportDateRangeForm(forms.Form):
+    start_date = forms.CharField(
+        required=False,
+        label="Start date (inclusive)",
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    end_date = forms.CharField(
+        required=False,
+        label="End date (inclusive)",
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    outlet_id = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        empty_label="All outlets in company",
+        label="Outlet",
+    )
+
+    def __init__(self, *args, outlet_queryset, include_outlet, **kwargs):
+        super().__init__(*args, **kwargs)
+        if include_outlet:
+            self.fields["outlet_id"].queryset = outlet_queryset.order_by("name", "id")
+        else:
+            self.fields.pop("outlet_id")
+
+    def _parse_iso_date(self, field_name):
+        value = self.cleaned_data.get(field_name, "").strip()
+        if not value:
+            return None
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise ValidationError("Enter a date in YYYY-MM-DD format.")
+        try:
+            return date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValidationError("Enter a valid calendar date.") from exc
+
+    def clean_start_date(self):
+        return self._parse_iso_date("start_date")
+
+    def clean_end_date(self):
+        return self._parse_iso_date("end_date")
 
     def clean(self):
         cleaned = super().clean()

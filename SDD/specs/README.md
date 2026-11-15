@@ -16,6 +16,8 @@ These specifications translate the requirements into observable product behavior
 | S04 | [Sales and lead closure](S04-sales-and-lead-closure.md) | Conversion, sale lines, loss, reopening |
 | S05 | [Settings and reports](S05-settings-and-reports.md) | Configurable lists, dashboards, required reports |
 | S06 | [Cross-cutting quality and privacy](S06-quality-and-privacy.md) | Responsive use, performance, security, personal data, backup |
+| S07 | [Excel data export](S07-excel-data-export.md) | Workbook contents, filters, access scope, generation, and download behavior |
+| S08 | [How to use this app](S08-how-to-use-this-app.md) | Authenticated in-app guide, workflow instructions, role scope, and responsive access |
 
 ## Review questions
 

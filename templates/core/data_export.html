@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Excel data export · Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>Download CRM data</h1>
+  <p>Review the export scope before starting the download. The workbook includes all retained CRM fields and records you are authorized to access.</p>
+  <section class="card" aria-labelledby="export-scope-heading">
+    <h2 id="export-scope-heading">Export scope</h2>
+    <dl>
+      <dt>Company</dt><dd>{{ company_name }}</dd>
+      <dt>Outlet</dt><dd>{{ scope_label }}</dd>
+      <dt>Timezone for event dates</dt><dd>{{ timezone_name }}</dd>
+    </dl>
+  </section>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" class="card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>Leave both dates blank to export all data in this scope. If you enter one date, it sets only that boundary.{% if include_outlet_selector %} The Owner can choose one outlet or all company outlets.{% endif %}</p>
+    <button type="submit">Download Excel workbook</button>
+  </form>
+{% endblock %}

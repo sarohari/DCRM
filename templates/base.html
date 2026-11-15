@@ -17,6 +17,8 @@
           <a href="{% url 'followup_queue' %}">Follow-ups</a>
           <a href="{% url 'daily_report' %}">Reports</a>
           <a href="{% url 'overdue_report' %}">Overdue</a>
+          {% if request.user.role == "OWNER" or request.user.role == "OUTLET_MANAGER" %}<a href="{% url 'how_to_use' %}">How to use this app</a>{% endif %}
+          {% if request.user.role == "OWNER" or request.user.role == "OUTLET_MANAGER" %}<a href="{% url 'data_export' %}">Data export</a>{% endif %}
           {% if request.user.role == "OWNER" %}<a href="{% url 'settings_home' %}">Settings</a>{% endif %}
         </nav>
       {% endif %}

@@ -44,6 +44,7 @@ class SafeRequestLoggingMiddleware:
 
     def __call__(self, request):
         request_id = uuid4().hex
+        request.request_id = request_id
         started_at = perf_counter()
         response = self.get_response(request)
         route_match = getattr(request, "resolver_match", None)

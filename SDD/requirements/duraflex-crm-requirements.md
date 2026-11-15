@@ -79,6 +79,8 @@ Walk-in capture happens at the showroom and is logged through the Outlet Manager
 
 - **Daily walk-ins vs conversions:** per day and per outlet, with date range filter and conversion percentage.
 - **Overdue follow-ups:** list with customer, assigned telecaller, days overdue and last outcome, filterable by outlet and telecaller.
+- **Excel data export:** authorized users can download all in-scope CRM data as an `.xlsx` workbook. Detailed behavior and acceptance criteria are defined in [S07 — Excel data export](../specs/S07-excel-data-export.md).
+- **How to use this app:** provide a role-aware in-app guide that explains the main CRM workflows and how to complete them. The guide is available from the app navigation to signed-in users and works on phone and desktop browsers. It documents walk-in capture, lead and follow-up handling, recording conversions or losses, and the dashboards/reports available to each role. It must not expose customer records or personal data.
 - Other reports (by telecaller, by category, lost reasons) are deferred to v2.
 
 ## 6. Non-functional requirements
@@ -110,11 +112,11 @@ Walk-in capture happens at the showroom and is logged through the Outlet Manager
 - Product catalog with prices and SKUs.
 - Customer-facing portal.
 - Multi-company onboarding and subscription billing (design for it, do not build it).
-- Reports beyond the two listed above, spreadsheet import (customers are added manually at launch), and languages other than English.
+- Reports beyond the two listed above, spreadsheet import (customers are added manually at launch), and languages other than English. Excel data export is included in v1.
 
 ## 9. Roadmap
 
-- **v1 (MVP):** setup, roles, walk-in capture, auto follow-ups, conversion recording, two reports.
+- **v1 (MVP):** setup, roles, walk-in capture, auto follow-ups, conversion recording, two reports, full Excel data export, and an in-app usage guide.
 - **v2:** more reports (telecaller performance, category sales, lost reasons), WhatsApp templates and automation, reminders by email or push.
 - **v3:** SaaS onboarding and billing, catalog and pricing, integration with billing software.
 

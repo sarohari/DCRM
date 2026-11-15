@@ -164,7 +164,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "privacy_safe": {
-            "format": "%(levelname)s request_id=%(request_id)s route=%(route)s method=%(method)s status=%(status_code)s duration_ms=%(duration_ms)s",
+            "format": "%(levelname)s request_id=%(request_id)s route=%(route)s method=%(method)s status=%(status_code)s duration_ms=%(duration_ms)s %(message)s",
         },
     },
     "handlers": {

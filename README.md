@@ -67,6 +67,12 @@ The Owner can open **Settings** to add, rename, activate, or deactivate product 
 
 Owner and Store Manager can open **Reports** for the daily walk-ins and conversion cohorts and the overdue follow-up list. Dates use the Salem outlet's `Asia/Kolkata` timezone. The daily report defaults to month-to-date: walk-ins are grouped by Visit date and converted enquiries by the local date the enquiry was created. Conversion percentage is converted enquiries from that creation date divided by walk-ins from that date; it can change later as enquiries convert. Days with no walk-ins show no percentage. The overdue report includes pending follow-ups before today for open enquiries, with customer, assigned user, days overdue, and the latest completed outcome.
 
+## S07 Excel data export
+
+Owner and Store Manager can open **Data export** to download an `.xlsx` workbook for the CRM records in their authorized scope. The Owner's export covers the company; the Store Manager's export is limited to Salem-outlet-1. Leave both date fields blank to export all retained data, or enter either or both inclusive boundaries. Dates use `Asia/Kolkata` and apply by record type: Visit time, Lead creation time, Follow-up scheduled date, Sale date, Sale Line's parent Sale date, and Audit Event time. Related rows and company reference lists are included as needed to keep IDs joinable; filtered exports do not pull unrelated operational history. Each record type has its own worksheet, including inactive, closed, completed, skipped, and voided records. The workbook includes customer personal data and should be handled as confidential business information. Password hashes and authentication secrets are excluded. Telecaller and unauthenticated accounts cannot download bulk exports.
+
+The export is generated synchronously. A synthetic local SQLite run with 50,000 Leads and their related records took about 40 seconds and produced a 34.12 MB workbook at 92.7 MB peak process RSS. Configure the selected production worker and proxy to allow at least a 90-second response; if the host cannot support that, revisit the synchronous design before production data is entered. This local benchmark is not a production-host performance guarantee. Excel limits a cell to 32,767 text characters; an overlong value fails the export rather than being silently truncated.
+
 ## S06 quality and operations boundary
 
 The responsive server-rendered UI supports the current and previous major releases of iOS Safari, Android Chrome, desktop Chrome, Edge, and Safari. High-volume lists show at most 50 rows per page. The performance target is p95 under 2 seconds for walk-in saves and under 3 seconds for list/report first pages on the agreed 2 vCPU/2 GB equivalent environment, SQLite on persistent host storage, five concurrent sessions, and 50,000 synthetic Leads. The benchmark must record SQLite lock errors; targets are not claimed until measured on the selected host.
@@ -84,5 +90,13 @@ WhatsApp actions open a click-to-chat composer with an optional suggested messag
 ## S04 sales and lead closure
 
 Owner and Store Manager can convert an open enquiry by recording a required bill number, sale date, sales channel, and one or more item lines. Amounts use INR with two decimal places. The Sale total defaults to the line subtotal; an override requires a reason. Owner and Store Manager can also mark an enquiry Lost with a configured reason; notes are optional. The Owner can edit saved sale or Lost details, and those changes are audited. Closed enquiries remain closed. If a customer returns, staff record a new Visit and, when appropriate, a new enquiry on the existing Customer.
+
+## How to use this app
+
+Signed-in users can open **How to use this app** from the main navigation for step-by-step help with walk-ins, enquiries, follow-ups, conversion/loss, dashboards, reports, and role access. For future user-visible changes, update the in-app guide in the same change or record why the change does not affect its instructions.
+
+## How to use this app
+
+Signed-in users can open **How to use this app** from the main navigation for step-by-step help with walk-ins, enquiries, follow-ups, conversion/loss, dashboards, reports, and role access. For future user-visible changes, update the in-app guide in the same change or record why the change does not affect its instructions.
 
 For a password reset, an operator can list account IDs with `python manage.py shell -c 'from accounts.models import User; print(*User.objects.values_list("id", "role"), sep=" | ")'`, then run `python manage.py changepassword <account-uuid>`; Django prompts for the new password without echoing it.

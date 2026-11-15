@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}How to use this app | Duroflex CRM{% endblock %}
+
+{% block content %}
+  <h1>How to use this app</h1>
+  <p>This guide explains the main Duroflex CRM workflows. Your available actions and records depend on your account role and assigned outlet.</p>
+
+  <section class="card" aria-labelledby="start-heading">
+    <h2 id="start-heading">Start here</h2>
+    <p>The home page shows today's walk-ins, converted enquiries, and overdue follow-ups. Use the main navigation to move between enquiries, sales, follow-ups, reports, and other pages available to your role.</p>
+    <p><a href="{% url 'home' %}">Open the home page</a></p>
+  </section>
+
+  <section class="card" aria-labelledby="walkin-heading">
+    <h2 id="walkin-heading">Record a walk-in</h2>
+    <ol>
+      <li>Open <a href="{% url 'walkin_new' %}">Record a walk-in</a> and enter the customer's name and phone number.</li>
+      <li>Choose a product category if you are creating an enquiry. Budget, notes, and time spent are optional.</li>
+      <li>Enquiry creation is selected by default. Turn it off only when recording a visit without an enquiry.</li>
+      <li>If the phone matches an existing customer, check the match and confirm to add the visit to that customer. If it is a different person, correct the phone number; the app will not create a second customer with the same number.</li>
+      <li>Save the form. The app records the outlet, staff account, and visit time automatically.</li>
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="enquiry-heading">
+    <h2 id="enquiry-heading">Find and review an enquiry</h2>
+    <p>Open <a href="{% url 'lead_list' %}">Enquiries</a> to find an enquiry and review its status and next follow-up. Select an enquiry to see its customer and interaction history. A customer can have more than one visit and enquiry.</p>
+  </section>
+
+  <section class="card" aria-labelledby="followup-heading">
+    <h2 id="followup-heading">Work through follow-ups</h2>
+    <ol>
+      <li>Open the <a href="{% url 'followup_queue' %}">Follow-up queue</a>. Today's work is shown before overdue and upcoming items.</li>
+      <li>Open an item to review the enquiry, then record the call or WhatsApp outcome. Add a note if useful and set or accept the next date when prompted.</li>
+      <li>You can add or reschedule pending follow-ups. When completing or skipping the last pending follow-up on an open enquiry, provide a replacement date so the enquiry still has a next action.</li>
+      <li>For WhatsApp, the app opens a click-to-chat message. Send it yourself, return to the CRM, and record the outcome. The app does not send messages automatically.</li>
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="closure-heading">
+    <h2 id="closure-heading">Record a sale or close an enquiry as Lost</h2>
+    <ul>
+      <li>When the customer buys, open the enquiry and choose the conversion action. Enter the bill number, sale date and channel, then add one or more product lines. The sale total defaults to the line subtotal; provide a reason if you override it.</li>
+      <li>If the customer does not proceed, mark the enquiry Lost and select a reason. Notes are optional.</li>
+      <li>Converted and Lost enquiries are closed and stop appearing as actionable follow-up work. If a customer returns, record a new visit and, if appropriate, a new enquiry on the existing customer.</li>
+    </ul>
+    <p><a href="{% url 'sale_list' %}">View sales</a></p>
+  </section>
+
+  <section class="card" aria-labelledby="reports-heading">
+    <h2 id="reports-heading">Review the dashboard and reports</h2>
+    <p>The home page summarizes today's walk-ins, conversions, and overdue follow-ups. Open <a href="{% url 'daily_report' %}">Reports</a> for daily walk-ins and conversion cohorts, or <a href="{% url 'overdue_report' %}">Overdue</a> to review pending follow-ups. Dates use the Salem outlet's local timezone.</p>
+    <p>The Owner can also open <a href="{% url 'settings_home' %}">Settings</a> to manage product categories, budget ranges, Lost reasons, and the follow-up cadence. This link is available only to the Owner.</p>
+    <p>Owner and Outlet Manager can use <a href="{% url 'data_export' %}">Data export</a> to download records in their permitted scope. The workbook contains customer data and should be handled as confidential business information.</p>
+  </section>
+
+  <section class="card" aria-labelledby="roles-heading">
+    <h2 id="roles-heading">Your access</h2>
+    <ul>
+      <li><strong>Owner:</strong> access to Duroflex / Salem-outlet-1 records and reports, plus Settings and Data export.</li>
+      <li><strong>Outlet Manager:</strong> access to the same fixed outlet's records, reports, follow-ups, and Data export. Settings are not available.</li>
+    </ul>
+    <p>The MVP has one fixed outlet, so the Owner and Outlet Manager currently share the same outlet data scope. Both roles can record walk-ins, manage follow-ups, and record conversions or losses. Available records are always limited by your account's permissions.</p>
+  </section>
+{% endblock %}
