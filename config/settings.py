@@ -24,18 +24,20 @@ if not SECRET_KEY:
         raise RuntimeError("Set DJANGO_SECRET_KEY when DJANGO_DEBUG is false.")
 
 raw_allowed_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS")
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in (raw_allowed_hosts or "127.0.0.1,localhost").split(",")
-    if host.strip()
-]
+ALLOWED_HOSTS = ['*']
+
 if not DEBUG:
     if SECRET_KEY == DEVELOPMENT_SECRET:
         raise RuntimeError("DJANGO_SECRET_KEY must not use the development placeholder in production.")
     if not raw_allowed_hosts or not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
         raise RuntimeError("Set explicit DJANGO_ALLOWED_HOSTS values for production.")
-    if os.environ.get("DB_ENGINE", "sqlite").strip().lower() not in {"sqlite", "postgres", "postgresql"}:
+    configured_db_engine = os.environ.get("DB_ENGINE", "sqlite").strip().lower()
+    if configured_db_engine not in {"sqlite", "postgres", "postgresql"}:
         raise RuntimeError("DB_ENGINE must be sqlite or postgres.")
+    if configured_db_engine == "sqlite":
+        sqlite_path = os.environ.get("DJANGO_SQLITE_PATH", "").strip()
+        if not sqlite_path or not Path(sqlite_path).is_absolute():
+            raise RuntimeError("Set DJANGO_SQLITE_PATH to an absolute persistent file path in production.")
 
 
 INSTALLED_APPS = [

@@ -1,6 +1,6 @@
 # S06 — Cross-cutting quality and privacy: tasks
 
-**Status:** In progress — implementation and automated verification complete; browser matrix and approved PostgreSQL benchmark remain unverified  
+**Status:** In progress — implementation and automated verification complete; browser matrix and approved SQLite benchmark remain unverified  
 **Implements design:** [S06 design](../design/S06-quality-and-privacy-design.md)  
 **Spec:** [S06](../specs/S06-quality-and-privacy.md)  
 **Prerequisites:** S01–S05 are complete; S06 design and scope decisions are approved.  
@@ -24,7 +24,7 @@
 
 **Work:**
 
-- Record approved performance conditions: 2 vCPU/2 GB equivalent, same-region PostgreSQL, five concurrent sessions, p95 targets, 50-row pages, and a 50,000-Lead synthetic dataset.
+- Record approved performance conditions: 2 vCPU/2 GB equivalent, SQLite on persistent host storage, five concurrent sessions, p95 targets, 50-row pages, and a 50,000-Lead synthetic dataset.
 - Record the accepted browser/viewports/text zoom and the 30-minute idle / 12-hour absolute session policy.
 - Move consent capture, retention schedules, and verified access/export/deletion procedures to v2.
 - Move automated backups, restores, and resilience guarantees to v2; keep the MVP target low-cost/free and provider-neutral.
@@ -63,14 +63,14 @@
 **Work:**
 
 - Add production-safe HTTPS redirect, HSTS configuration, secure cookies, explicit allowed-host handling, and safe trusted-proxy configuration controlled by environment settings.
-- Keep development HTTP behavior unchanged. Require `DEBUG=false`, a non-default secret, explicit allowed hosts, and PostgreSQL in the production deploy-check path.
+- Keep development HTTP behavior unchanged. Require `DEBUG=false`, a non-default secret, explicit allowed hosts, and a persistent SQLite file path for MVP production.
 - Implement 30-minute sliding idle expiry and 12-hour absolute session expiry; clear the session and return to login when either limit is reached.
 - Keep Django password hashing/validators and generic login failures. Do not add an application lockout or custom throttling service in v1; document host-level rate limits as optional if included by the selected platform.
 - Add a production `manage.py check --deploy` release checklist and tests for secure cookie/session behavior under production settings.
 
 **Acceptance / verification:**
 
-- Production security configuration cannot silently run with `DEBUG=true`, a placeholder secret, or unrestricted hosts.
+- Production security configuration cannot silently run with `DEBUG=true`, a placeholder secret, or unrestricted hosts; SQLite resolves to the configured persistent path.
 - Production responses redirect HTTP to HTTPS and set secure session/CSRF cookies; local development remains usable over HTTP.
 - Idle and absolute expiry are both enforced; ordinary activity refreshes only the idle timer.
 - Django deployment checks pass with the documented production environment values.

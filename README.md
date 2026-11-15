@@ -5,7 +5,7 @@ Minimal Django foundation for the Duroflex CRM MVP.
 ## Requirements
 
 - Python 3.12 or newer
-- PostgreSQL for deployment; SQLite is used for local development
+- SQLite for local development and MVP deployment; PostgreSQL is an optional future backend
 
 ## Local setup
 
